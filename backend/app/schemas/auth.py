@@ -26,18 +26,21 @@ class SetupRequest(BaseModel):
         return v
 
 
-class TokenResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"
-
-
+# UserOut must be defined before TokenResponse since TokenResponse references it
 class UserOut(BaseModel):
     id: int
     email: str
     role: str
     is_active: bool
+    password_change_required: bool = False
 
     model_config = {"from_attributes": True}
+
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: UserOut
 
 
 class UserCreate(BaseModel):
@@ -61,6 +64,18 @@ class RegisterRequest(BaseModel):
     password: str
 
     @field_validator("password")
+    @classmethod
+    def password_min_length(cls, v: str) -> str:
+        if len(v) < 8:
+            raise ValueError("Password must be at least 8 characters.")
+        return v
+
+
+class PasswordChangeRequest(BaseModel):
+    current_password: str
+    new_password: str
+
+    @field_validator("new_password")
     @classmethod
     def password_min_length(cls, v: str) -> str:
         if len(v) < 8:

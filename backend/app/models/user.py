@@ -20,6 +20,7 @@ class User(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
     is_active: Mapped[bool] = mapped_column(default=True)
+    password_change_required: Mapped[bool] = mapped_column(default=True)
 
     # Relationships
     conversations: Mapped[list["Conversation"]] = relationship(

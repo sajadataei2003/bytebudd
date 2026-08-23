@@ -14,7 +14,7 @@ from app.models.user import User
 from app.models.app_settings import AppSettings
 from app.schemas.auth import (
     LoginRequest, TokenResponse, UserOut, UserCreate, UserUpdate,
-    SetupRequest, RegisterRequest, RegistrationStatusOut,
+    SetupRequest, RegisterRequest, RegistrationStatusOut, PasswordChangeRequest,
 )
 
 router = APIRouter()
@@ -123,7 +123,10 @@ async def login(payload: LoginRequest, db: AsyncSession = Depends(get_db)):
         )
 
     token = create_access_token(data={"sub": str(user.id), "role": user.role})
-    return TokenResponse(access_token=token)
+    return TokenResponse(
+        access_token=token,
+        user=UserOut.model_validate(user)
+    )
 
 
 @router.post("/refresh", response_model=TokenResponse)
@@ -244,3 +247,23 @@ async def set_registration(
     s.allow_registration = payload.allow_registration
     await db.flush()
     return RegistrationStatusOut(allow_registration=s.allow_registration)
+
+
+@router.post("/password-change", response_model=UserOut)
+async def change_password(
+    payload: PasswordChangeRequest,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    """Change password. If password_change_required is True, user is forced to change it."""
+    if not verify_password(payload.current_password, current_user.password_hash):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Current password is incorrect",
+        )
+
+    current_user.password_hash = hash_password(payload.new_password)
+    current_user.password_change_required = False
+    await db.flush()
+    await db.refresh(current_user)
+    return UserOut.model_validate(current_user)

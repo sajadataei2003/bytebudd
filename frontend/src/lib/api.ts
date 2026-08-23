@@ -98,12 +98,18 @@ export const authApi = {
     }),
 
   login: (email: string, password: string) =>
-    apiFetch<{ access_token: string; token_type: string }>("/auth/login", {
+    apiFetch<{ access_token: string; token_type: string; user: { id: number; email: string; role: string; is_active: boolean; password_change_required: boolean } }>("/auth/login", {
       method: "POST",
       body: JSON.stringify({ email, password }),
     }),
 
-  me: () => apiFetch<{ id: number; email: string; role: string; is_active: boolean }>("/auth/me"),
+  me: () => apiFetch<{ id: number; email: string; role: string; is_active: boolean; password_change_required: boolean }>("/auth/me"),
+
+  changePassword: (current_password: string, new_password: string) =>
+    apiFetch<{ id: number; email: string; role: string; is_active: boolean; password_change_required: boolean }>("/auth/password-change", {
+      method: "POST",
+      body: JSON.stringify({ current_password, new_password }),
+    }),
 
   refresh: () =>
     apiFetch<{ access_token: string; token_type: string }>("/auth/refresh", { method: "POST" }),

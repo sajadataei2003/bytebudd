@@ -11,7 +11,6 @@ Usage:
 """
 
 import asyncio
-import os
 import sys
 
 # Add parent directory to path
@@ -27,8 +26,8 @@ from app.core.database import Base
 
 
 async def create_admin():
-    email = os.getenv("ADMIN_EMAIL", "admin@bytebudd.local")
-    password = os.getenv("ADMIN_PASSWORD", "admin123")
+    email = "admin"
+    password = "admin"
 
     engine = create_async_engine(settings.database_url, echo=False)
     SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)

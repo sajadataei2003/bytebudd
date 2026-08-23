@@ -32,7 +32,13 @@ export default function LoginPage() {
     try {
       const data = await authApi.login(email, password);
       setToken(data.access_token);
-      router.push("/");
+      
+      // Check if password change is required
+      if (data.user.password_change_required) {
+        router.push("/password-change");
+      } else {
+        router.push("/");
+      }
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Login failed";
       setError(message);

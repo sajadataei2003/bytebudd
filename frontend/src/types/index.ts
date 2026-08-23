@@ -7,6 +7,7 @@ export interface User {
   email: string;
   role: "admin" | "user";
   is_active: boolean;
+  password_change_required?: boolean;
   created_at?: string;
 }
 

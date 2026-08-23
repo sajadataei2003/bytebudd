@@ -38,7 +38,8 @@ ENV ENVIRONMENT=development
 
 COPY . .
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+# Run migrations, create admin (ignore failure if already exists), then start server
+CMD ["sh", "-c", "alembic upgrade head && (python scripts/create_admin.py; true) && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"]
 
 # ─── Production stage ──────────────────────────────────────────────────────
 FROM base AS production
@@ -49,7 +50,7 @@ ENV ENVIRONMENT=production
 
 COPY . .
 
-# Run Alembic migrations then start server
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"]
+# Run migrations, create admin (ignore failure if already exists), then start server
+CMD ["sh", "-c", "alembic upgrade head && (python scripts/create_admin.py; true) && uvicorn app.main:app --host 0.0.0.0 --port 8000 --workers 2"]
 
 EXPOSE 8000
